@@ -24,7 +24,7 @@ export default function Block(clr) {
 
     const animateScale = animation.interpolate({
         inputRange: [0, 0.4, 1],
-        outputRange: [1, 1.01, 1],
+        outputRange: [1, 1, 1],
     });
     const animateOpacity = animation.interpolate({
         inputRange: [0, 0.4, 1],

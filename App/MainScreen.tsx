@@ -49,41 +49,48 @@ function MainScreen() {
         setScore(0);
     };
 
-    function display() {
+    async function display() {
         let timelen = mainSeq.length * 1000;
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
         }, timelen);
 
-        for (let i = 0; i < mainSeq.length; i++) {
-            const letter = mainSeq[i];
-            if (letter === 'R') {
-                setLoadRed(true);
-                setTimeout(() => { setLoadRed(false); }, 1000);
+        for (let i = 0; i <= mainSeq.length; i++) {
+
+            if (i === 0) {
+                if (mainSeq[i] === 'R') setLoadRed(true);
+                if (mainSeq[i] === 'G') setLoadGreen(true);
+                if (mainSeq[i] === 'B') setLoadBlue(true);
+                if (mainSeq[i] === 'Y') setLoadYellow(true);
             }
-            else if (letter === 'G') {
-                setLoadGreen(true);
-                setTimeout(() => { setLoadGreen(false); }, 1000);
-            }
-            else if (letter === 'B') {
-                setLoadBlue(true);
-                setTimeout(() => { setLoadBlue(false); }, 1000);
-            }
-            else if (letter === 'Y') {
-                setLoadYellow(true);
-                setTimeout(() => { setLoadYellow(false); }, 1000);
-            }
-            setTimeout(() => console.log('wait in iter', i), 1000);
+            let timer = 1000 * i;
+            setTimeout(() => {
+                var next;
+                const letter = mainSeq[i];
+                if (i + 1 < mainSeq.length)
+                    next = mainSeq[i + 1];
+                if (letter === 'R') setLoadRed(false);
+                else if (letter === 'G') setLoadGreen(false);
+                else if (letter === 'B') setLoadBlue(false);
+                else if (letter === 'Y') setLoadYellow(false);
+                if (next === 'R') setLoadRed(true);
+                else if (next === 'B') setLoadBlue(true);
+                else if (next === 'G') setLoadGreen(true);
+                else if (next === 'Y') setLoadYellow(true);
+            }, 1000 + timer);
+
+
         }
-
-
     }
 
     useEffect(() => {
         newColor();
-        display();
     }, [score]);
+
+    useEffect(() => {
+        display();
+    }, [mainSeq]);
 
 
 
@@ -91,7 +98,7 @@ function MainScreen() {
         <View style={styles.main}>
             <Text style={styles.text}>Score: {score}</Text>
             <Text style={styles.text}>{mainSeq}</Text>
-            <TouchableOpacity style={{ backgroundColor: loading ? '#000' : '#fff' }} onPress={() => setLoading(!loading)}>
+            {/* <TouchableOpacity style={{ backgroundColor: loading ? '#000' : '#fff' }} onPress={() => setLoading(!loading)}>
                 <Text style={styles.text}>Black True -- White False   loading</Text>
             </TouchableOpacity>
             <View style={{ flexDirection: 'row' }}>
@@ -99,7 +106,7 @@ function MainScreen() {
                 <TouchableOpacity style={{ backgroundColor: '#0f0', width: 50, height: 50, borderWidth: loadGreen ? 2 : 0 }} onPress={() => setLoadGreen(!loadGreen)} />
                 <TouchableOpacity style={{ backgroundColor: '#00f', width: 50, height: 50, borderWidth: loadBlue ? 2 : 0 }} onPress={() => setLoadBlue(!loadBlue)} />
                 <TouchableOpacity style={{ backgroundColor: '#ff0', width: 50, height: 50, borderWidth: loadYellow ? 2 : 0 }} onPress={() => setLoadYellow(!loadYellow)} />
-            </View>
+            </View> */}
 
             <TouchableOpacity style={{ backgroundColor: '#999', height: 40 }} onPress={() => { newGame(); }}>
                 <Text style={styles.text}>Start</Text>
