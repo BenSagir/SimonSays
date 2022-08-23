@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Animated, View, Easing, TouchableWithoutFeedback } from 'react-native';
+import playSound from './util';
 
-
-export default function Block(clr) {
+export default function Block(clr: any) {
     const [animation, setAnimation] = useState(new Animated.Value(0));
-    const [color, setColor] = useState();
+    const [color, setColor] = useState<string>('');
 
     const coloring = () => {
         let temp = clr.color;
@@ -22,28 +23,24 @@ export default function Block(clr) {
         });
     };
 
-    const animateScale = animation.interpolate({
-        inputRange: [0, 0.4, 1],
-        outputRange: [1, 1, 1],
-    });
     const animateOpacity = animation.interpolate({
-        inputRange: [0, 0.4, 1],
-        outputRange: [1, 0.1, 1],
+        inputRange: [0, 0.3, 0.6, 1],
+        outputRange: [0, 0.5, 0.5, 1],
     });
 
     const animateStyle = {
-        transform: [{ scale: animateScale }],
         opacity: animateOpacity,
     };
 
     useEffect(() => {
         coloring();
         animate();
+        playSound(clr.color);
     }, []);
 
     return (
         <View>
-            <TouchableWithoutFeedback onPress={() => { animate() }}>
+            <TouchableWithoutFeedback onPress={() => { }}>
                 <Animated.View style={animateStyle}>
                     <View style={[styles.block, { backgroundColor: color }]} />
                 </Animated.View>
@@ -53,10 +50,9 @@ export default function Block(clr) {
 }
 
 const styles = StyleSheet.create({
-
     block: {
-        width: 100,
-        height: 100,
+        width: 150,
+        height: 150,
     },
 });
 
