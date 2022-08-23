@@ -3,9 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Alert, Dimensions, FlatList, Modal, TextInput, TouchableOpacity, } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setScore } from './redux/actions';
+import { MMKV } from 'react-native-mmkv';
 
-const data = [
-    { name: 'suzy', score: 5 }, { name: 'lior', score: 10 }, { name: 'ben', score: 50 }, { name: 'tamir', score: 15 }];
+export const storage = new MMKV()
+
+// const data = [
+//     { name: 'suzy', score: 5 }, { name: 'lior', score: 10 }, { name: 'ben', score: 50 }, { name: 'tamir', score: 15 }];
 
 function ScoreScreen() {
     const { score } = useSelector((state: any) => state.scoreReducer);
@@ -13,8 +16,9 @@ function ScoreScreen() {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [input, setInput] = useState<string>('');
+    const [data, setData] = useState([]);
 
-    const renderItem = (item) => {
+    const renderItem = (item: any) => {
         return (
             <View style={styles.item}>
                 <Text style={styles.text}>{item.name}</Text>
@@ -23,7 +27,33 @@ function ScoreScreen() {
         );
     };
 
-    const reargData = data.sort((a, b) => b.score - a.score).slice(0, 10)
+    const readStoarge = () => {
+        try {
+            const json = storage.getString('data') // { 'username': 'Marc', 'age': 21 }
+            const object = JSON.parse(json);
+            const sorted = object.sort((a, b) => b.score - a.score).slice(0, 10);
+            setData(sorted);
+        }
+        catch {
+            console.log('error');
+        }
+    };
+
+    const writeStorage = () => {
+        storage.set('data', JSON.stringify(data));
+    };
+
+    const addNewScore = () => {
+        const obj = { name: input, score: score };
+        let temp = data;
+        temp.push(obj);
+        setData(temp.sort((a, b) => b.score - a.score).slice(0, 10));
+        writeStorage();
+    };
+
+    useEffect(() => {
+        readStoarge();
+    }, []);
 
 
     return (
@@ -54,7 +84,7 @@ function ScoreScreen() {
 
                     />
                     <View style={styles.row}>
-                        <TouchableOpacity style={styles.button} onPress={() => { data.push({ name: input, score: score }); setModalVisible(!modalVisible); }}>
+                        <TouchableOpacity style={styles.button} onPress={() => { addNewScore(); setModalVisible(!modalVisible); }}>
                             <Text style={styles.text}>Done!</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.button} onPress={() => setModalVisible(!modalVisible)}>
@@ -64,7 +94,7 @@ function ScoreScreen() {
                 </View>
             </Modal>
             <FlatList
-                data={reargData}
+                data={data}
                 renderItem={({ item }) => renderItem(item)}
             />
         </View>
@@ -93,10 +123,8 @@ const styles = StyleSheet.create({
         color: '#273746'
     },
     popup: {
-
-        // flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
         alignSelf: 'center',
         marginTop: 50,
         backgroundColor: '#fff',
