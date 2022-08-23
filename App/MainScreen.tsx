@@ -3,16 +3,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Alert, TouchableOpacity } from 'react-native';
 import Block from './Block';
+import { useSelector, useDispatch } from 'react-redux';
+import { setScore } from './redux/actions';
+import playSound from './util';
 
-function MainScreen() {
-    const [mainSeq, setMainSeq] = useState('');
-    const [userSeq, setUserSeq] = useState('');
-    const [score, setScore] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const [loadRed, setLoadRed] = useState(false);
-    const [loadGreen, setLoadGreen] = useState(false);
-    const [loadBlue, setLoadBlue] = useState(false);
-    const [loadYellow, setLoadYellow] = useState(false);
+function MainScreen({ navigation }) {
+
+    const { score } = useSelector((state: any) => state.scoreReducer);
+    const dispatch = useDispatch();
+
+    const [mainSeq, setMainSeq] = useState<string>('');
+    const [userSeq, setUserSeq] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [loadRed, setLoadRed] = useState<boolean>(false);
+    const [loadGreen, setLoadGreen] = useState<boolean>(false);
+    const [loadBlue, setLoadBlue] = useState<boolean>(false);
+    const [loadYellow, setLoadYellow] = useState<boolean>(false);
 
     const colors = ['R', 'G', 'B', 'Y'];
 
@@ -23,19 +29,26 @@ function MainScreen() {
         setMainSeq(temp);
     };
 
-    const handleInput = val => {
+    const handleInput = (val: string) => {
+        if (val !== 'R' && val !== 'G' && val !== 'B' && val !== 'Y') { return; }
+        if (val === 'R') { playSound('#f00'); }
+        if (val === 'G') { playSound('#0f0'); }
+        if (val === 'B') { playSound('#00f'); }
+        if (val === 'Y') { playSound('#ff0'); }
+
         let temp = userSeq;
         temp += val;
         let isOk = mainSeq.includes(temp, 0);
 
         if (isOk) {
             if (mainSeq.length === temp.length) {
-                if (mainSeq === temp) {
-                    setUserSeq('');
-                    setScore(score + 1);
-                }
-            } else
-                setUserSeq(temp);
+                setTimeout(() => {
+                    if (mainSeq === temp) {
+                        setUserSeq('');
+                        dispatch(setScore(score + 1) as any);
+                    }
+                }, 1000);
+            } else { setUserSeq(temp); }
         }
         else {
             setMainSeq('');
@@ -46,7 +59,7 @@ function MainScreen() {
     const newGame = () => {
         setMainSeq('');
         setUserSeq('');
-        setScore(0);
+        dispatch(setScore(0) as any);
     };
 
     async function display() {
@@ -59,28 +72,25 @@ function MainScreen() {
         for (let i = 0; i <= mainSeq.length; i++) {
 
             if (i === 0) {
-                if (mainSeq[i] === 'R') setLoadRed(true);
-                if (mainSeq[i] === 'G') setLoadGreen(true);
-                if (mainSeq[i] === 'B') setLoadBlue(true);
-                if (mainSeq[i] === 'Y') setLoadYellow(true);
+                if (mainSeq[i] === 'R') { setLoadRed(true); }
+                if (mainSeq[i] === 'G') { setLoadGreen(true); }
+                if (mainSeq[i] === 'B') { setLoadBlue(true); }
+                if (mainSeq[i] === 'Y') { setLoadYellow(true); }
             }
             let timer = 1000 * i;
             setTimeout(() => {
                 var next;
                 const letter = mainSeq[i];
-                if (i + 1 < mainSeq.length)
-                    next = mainSeq[i + 1];
-                if (letter === 'R') setLoadRed(false);
-                else if (letter === 'G') setLoadGreen(false);
-                else if (letter === 'B') setLoadBlue(false);
-                else if (letter === 'Y') setLoadYellow(false);
-                if (next === 'R') setLoadRed(true);
-                else if (next === 'B') setLoadBlue(true);
-                else if (next === 'G') setLoadGreen(true);
-                else if (next === 'Y') setLoadYellow(true);
+                if (i + 1 < mainSeq.length) { next = mainSeq[i + 1]; }
+                if (letter === 'R') { setLoadRed(false); }
+                else if (letter === 'G') { setLoadGreen(false); }
+                else if (letter === 'B') { setLoadBlue(false); }
+                else if (letter === 'Y') { setLoadYellow(false); }
+                if (next === 'R') { setLoadRed(true); }
+                else if (next === 'B') { setLoadBlue(true); }
+                else if (next === 'G') { setLoadGreen(true); }
+                else if (next === 'Y') { setLoadYellow(true); }
             }, 1000 + timer);
-
-
         }
     }
 
@@ -96,30 +106,24 @@ function MainScreen() {
 
     return (
         <View style={styles.main}>
+            <TouchableOpacity onPress={() => navigation.navigate('Result')}>
+                <Text style={styles.text}>to results</Text>
+            </TouchableOpacity>
             <Text style={styles.text}>Score: {score}</Text>
             <Text style={styles.text}>{mainSeq}</Text>
-            {/* <TouchableOpacity style={{ backgroundColor: loading ? '#000' : '#fff' }} onPress={() => setLoading(!loading)}>
-                <Text style={styles.text}>Black True -- White False   loading</Text>
-            </TouchableOpacity>
-            <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity style={{ backgroundColor: '#f00', width: 50, height: 50, borderWidth: loadRed ? 2 : 0 }} onPress={() => setLoadRed(!loadRed)} />
-                <TouchableOpacity style={{ backgroundColor: '#0f0', width: 50, height: 50, borderWidth: loadGreen ? 2 : 0 }} onPress={() => setLoadGreen(!loadGreen)} />
-                <TouchableOpacity style={{ backgroundColor: '#00f', width: 50, height: 50, borderWidth: loadBlue ? 2 : 0 }} onPress={() => setLoadBlue(!loadBlue)} />
-                <TouchableOpacity style={{ backgroundColor: '#ff0', width: 50, height: 50, borderWidth: loadYellow ? 2 : 0 }} onPress={() => setLoadYellow(!loadYellow)} />
-            </View> */}
 
-            <TouchableOpacity style={{ backgroundColor: '#999', height: 40 }} onPress={() => { newGame(); }}>
+            <TouchableOpacity style={styles.start} onPress={() => { newGame(); }}>
                 <Text style={styles.text}>Start</Text>
             </TouchableOpacity>
-            <View style={{}}>
-                <View style={{ flexDirection: 'row' }}>
+            <View style={[styles.game, { borderColor: loading ? '#999' : '#e2e2e1' }]}>
+                <View style={styles.row}>
                     {loading ? loadRed ? <Block color={'#f00'} /> : <View style={styles.red} /> :
                         <TouchableOpacity style={styles.red} onPress={() => handleInput('R')} />}
 
                     {loading ? loadGreen ? <Block color={'#0f0'} /> : <View style={styles.green} /> :
                         <TouchableOpacity style={styles.green} onPress={() => handleInput('G')} />}
                 </View>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={styles.row}>
                     {loading ? loadBlue ? <Block color={'#00f'} /> : <View style={styles.blue} /> :
                         <TouchableOpacity style={styles.blue} onPress={() => handleInput('B')} />}
 
@@ -151,13 +155,23 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 65,
     },
-    img: {
-        width: 100,
-        height: 100,
+    start: {
+        padding: 5,
+        borderRadius: 11,
+        backgroundColor: '#999'
     },
-    red: { backgroundColor: '#f00', width: 100, height: 100 },
-    green: { backgroundColor: '#0f0', width: 100, height: 100 },
-    blue: { backgroundColor: '#00f', width: 100, height: 100 },
-    yellow: { backgroundColor: '#ff0', width: 100, height: 100 },
+    row: {
+        flexDirection: 'row',
+    },
+    game: {
+        borderRadius: 200,
+        backgroundColor: '#fff',
+        overflow: 'hidden',
+        borderWidth: 10,
+    },
+    red: { backgroundColor: '#f00', width: 150, height: 150, },
+    green: { backgroundColor: '#0f0', width: 150, height: 150, },
+    blue: { backgroundColor: '#00f', width: 150, height: 150, },
+    yellow: { backgroundColor: '#ff0', width: 150, height: 150, },
 });
 export default MainScreen;
