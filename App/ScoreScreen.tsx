@@ -1,22 +1,24 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, Dimensions, FlatList, Modal, TextInput, TouchableOpacity, } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { setScore } from './redux/actions';
+import { setScore, setPlay } from './redux/actions';
 import { MMKV } from 'react-native-mmkv';
 
-export const storage = new MMKV()
+export const storage = new MMKV();
 
-// const data = [
-//     { name: 'suzy', score: 5 }, { name: 'lior', score: 10 }, { name: 'ben', score: 50 }, { name: 'tamir', score: 15 }];
+interface Scores {
+    name: string,
+    score: number,
+}
 
-function ScoreScreen() {
+function ScoreScreen({ navigation }: any) {
     const { score } = useSelector((state: any) => state.scoreReducer);
     const dispatch = useDispatch();
 
-    const [modalVisible, setModalVisible] = useState(false);
+    const [modal, setModal] = useState<boolean>(true);
     const [input, setInput] = useState<string>('');
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<Scores[]>([]);
 
     const renderItem = (item: any) => {
         return (
@@ -29,8 +31,7 @@ function ScoreScreen() {
 
     const readStoarge = () => {
         try {
-            const json = storage.getString('data') // { 'username': 'Marc', 'age': 21 }
-            const object = JSON.parse(json);
+            const object: Scores[] = JSON.parse(storage.getString('data') as any);
             const sorted = object.sort((a, b) => b.score - a.score).slice(0, 10);
             setData(sorted);
         }
@@ -44,13 +45,18 @@ function ScoreScreen() {
     };
 
     const addNewScore = () => {
-        const obj = { name: input, score: score };
-        let temp = data;
+        const obj: Scores = { name: input, score: score };
+        let temp: Scores[] = data;
         temp.push(obj);
         setData(temp.sort((a, b) => b.score - a.score).slice(0, 10));
         writeStorage();
     };
 
+    const newGame = () => {
+        dispatch(setPlay(true) as any);
+        dispatch(setScore(0) as any);
+        navigation.goBack();
+    };
     useEffect(() => {
         readStoarge();
     }, []);
@@ -58,37 +64,40 @@ function ScoreScreen() {
 
     return (
         <View style={styles.main}>
-            <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
-                <Text style={styles.headline}>Best Scores</Text>
+            <Text style={styles.headline}>Best Scores</Text>
+
+            <TouchableOpacity style={styles.start} onPress={() => newGame()}>
+                <Text style={styles.text}>New Game</Text>
             </TouchableOpacity>
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    setModalVisible(!modalVisible);
-                }}
+                visible={modal}
             >
                 <View style={styles.popup}>
-                    <Text style={styles.text}>Game Over! you got score of {score}</Text>
-                    <Text style={styles.text}>to save your score please enter your name</Text>
+                    <Text style={styles.boldText}>Game Over!</Text>
+                    <Text style={styles.popText}> you got score of {score}</Text>
+                    <Text style={styles.popText}>to save your score please enter your name</Text>
                     <TextInput
                         style={styles.input}
                         placeholder={'Your name...'}
-                        placeholderTextColor={'#79a8d8'}
+                        placeholderTextColor={'#9e2f8b'}
                         autoCapitalize={'words'}
                         autoCorrect={false}
                         value={input}
                         onChangeText={setInput}
-
                     />
                     <View style={styles.row}>
-                        <TouchableOpacity style={styles.button} onPress={() => { addNewScore(); setModalVisible(!modalVisible); }}>
-                            <Text style={styles.text}>Done!</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(!modalVisible)}>
-                            <Text style={styles.text}>Cancel</Text>
+                        {input.length > 0 ?
+                            <TouchableOpacity style={styles.button} onPress={() => { addNewScore(); setModal(!modal); }}>
+                                <Text style={styles.popText}>Done!</Text>
+                            </TouchableOpacity> :
+                            <View style={styles.buttonX}>
+                                <Text style={styles.popText}>Done?</Text>
+                            </View>
+                        }
+                        <TouchableOpacity style={styles.button} onPress={() => setModal(!modal)}>
+                            <Text style={styles.popText}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -103,31 +112,32 @@ function ScoreScreen() {
 
 const styles = StyleSheet.create({
     main: {
-        flex: 1,
-        backgroundColor: '#e2e2e1',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#241b2f',
     },
     row: {
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
     input: {
         flexDirection: 'row',
-        backgroundColor: '#FFF',
+        backgroundColor: '#262335',
         borderRadius: 11,
         borderWidth: 1,
-        borderColor: '#79A8D8',
+        borderColor: '#f170db',
         paddingVertical: 16,
         paddingHorizontal: 22,
-        width: Dimensions.get('screen').width * 90 / 100,
-        margin: 7,
+        width: Dimensions.get('screen').width * 75 / 100,
+        margin: 25,
         fontSize: 20,
-        color: '#273746'
+        color: '#eee',
     },
     popup: {
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
-        marginTop: 50,
-        backgroundColor: '#fff',
+        marginTop: 60,
+        backgroundColor: '#171520',
         borderRadius: 11,
         padding: 40,
         margin: 10,
@@ -136,27 +146,40 @@ const styles = StyleSheet.create({
             width: 9,
             height: 11,
         },
-        shadowOpacity: 0.05,
+        shadowOpacity: 1,
         shadowRadius: 3.84,
-        elevation: 4,
+        elevation: 12,
     },
     text: {
-        color: '#000',
+        color: '#fff',
         fontSize: 20,
     },
+    popText: {
+        color: '#fff',
+        fontSize: 18,
+        textAlign: 'center',
+        padding: 6,
+    },
+    boldText: {
+        color: '#fff',
+        fontSize: 25,
+        fontWeight: 'bold',
+        padding: 6,
+    },
     headline: {
-        color: '#000',
+        color: '#36f9ea',
         fontSize: 25,
         fontWeight: 'bold',
         textAlign: 'center',
         padding: 4,
+        margin: 10,
     },
     item: {
         alignSelf: 'center',
         padding: 15,
         marginVertical: 5,
         borderRadius: 11,
-        backgroundColor: '#fff',
+        backgroundColor: '#171520',
         alignItems: 'center',
         justifyContent: 'space-between',
         width: Dimensions.get('window').width * 90 / 100,
@@ -170,10 +193,25 @@ const styles = StyleSheet.create({
         elevation: 4,
         flexDirection: 'row',
     },
+    start: {
+        padding: 5,
+        borderRadius: 11,
+        backgroundColor: '#262335',
+    },
     button: {
         padding: 5,
         borderRadius: 11,
-        backgroundColor: '#999',
+        backgroundColor: '#262335',
+        margin: 10,
+        marginHorizontal: 25,
+    },
+    buttonX: {
+        padding: 5,
+        borderRadius: 11,
+        borderColor: '#262335',
+        borderWidth: 2,
+        margin: 10,
+        marginHorizontal: 25,
     },
 });
 
