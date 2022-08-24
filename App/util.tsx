@@ -3,9 +3,8 @@ import SoundPlayer from 'react-native-sound-player';
 
 export default function playSound(colorCode: string) {
     try {
-        // play the file tone.mp3
+        // play the .mp3 file depand on the color pressed
         let colorName = 'red';
-        // let colorCode = clr.color;
         if (colorCode === '#f00') {
             colorName = 'red';
         }
@@ -20,7 +19,6 @@ export default function playSound(colorCode: string) {
         }
 
         SoundPlayer.playSoundFile(colorName, 'mp3');
-        // or play from url
     } catch (e) {
         console.log('cannot play the sound file', e);
     }

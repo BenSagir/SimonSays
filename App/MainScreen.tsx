@@ -3,13 +3,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Block from './Block';
 import { useSelector, useDispatch } from 'react-redux';
 import { setScore, setPlay } from './redux/actions';
+import Block from './Block';
 import playSound from './util';
 
 function MainScreen({ navigation }: any) {
-
     const { score } = useSelector((state: any) => state.scoreReducer);
     const { play } = useSelector((state: any) => state.playReducer);
     const dispatch = useDispatch();

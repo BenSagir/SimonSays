@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setScore, setPlay } from './redux/actions';
 import { MMKV } from 'react-native-mmkv';
 
-export const storage = new MMKV();
+export const storage = new MMKV();          //instance of ondevice storage
 
-interface Scores {
+interface Scores {                          //type of score object
     name: string,
     score: number,
 }
@@ -20,7 +21,7 @@ function ScoreScreen({ navigation }: any) {
     const [input, setInput] = useState<string>('');
     const [data, setData] = useState<Scores[]>([]);
 
-    const renderItem = (item: any) => {
+    const renderItem = (item: any) => {     //render function of each score object in a flatlist
         return (
             <View style={styles.item}>
                 <Text style={styles.text}>{item.name}</Text>
@@ -29,35 +30,33 @@ function ScoreScreen({ navigation }: any) {
         );
     };
 
-    const readStoarge = () => {
-        try {
+    // sort by score and take only top 10 elements
+    const sortData = (arr: Scores[]) => { return arr.sort((a, b) => b.score - a.score).slice(0, 10); };
+
+    const readStoarge = () => {             //read from storage function
+        try {                               //get the object as json from string ans sort wth the sort fucntion
             const object: Scores[] = JSON.parse(storage.getString('data') as any);
-            const sorted = object.sort((a, b) => b.score - a.score).slice(0, 10);
-            setData(sorted);
-        }
-        catch {
-            console.log('error');
-        }
+            setData(sortData(object));
+        } catch { console.log('error'); }
     };
 
-    const writeStorage = () => {
-        storage.set('data', JSON.stringify(data));
+    const writeStorage = () => storage.set('data', JSON.stringify(data)); //function to write to storage the recent data
+
+    const addNewScore = () => {             //function to add new element to the data
+        const obj: Scores = { name: input, score: score };  //create new object from the input name and the score from the game
+        let temp: Scores[] = data;          // take the current data as instance
+        temp.push(obj);                     //add the new score to the data
+        setData(sortData(temp));            //set the sorted new data to the state variable
+        writeStorage();                     //write to the storage
     };
 
-    const addNewScore = () => {
-        const obj: Scores = { name: input, score: score };
-        let temp: Scores[] = data;
-        temp.push(obj);
-        setData(temp.sort((a, b) => b.score - a.score).slice(0, 10));
-        writeStorage();
+    const newGame = () => {                 //function to start a new game on the main screen
+        dispatch(setPlay(true) as any);     //set play as true
+        dispatch(setScore(0) as any);       //set the score back to 0
+        navigation.goBack();                //navigate back to the main screen
     };
 
-    const newGame = () => {
-        dispatch(setPlay(true) as any);
-        dispatch(setScore(0) as any);
-        navigation.goBack();
-    };
-    useEffect(() => {
+    useEffect(() => {                       //on loading the screen, go to read the storage for the stored data
         readStoarge();
     }, []);
 

@@ -1,15 +1,17 @@
 /* eslint-disable prettier/prettier */
+
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Animated, View, Easing, TouchableWithoutFeedback } from 'react-native';
 import playSound from './util';
 
 export default function Block(clr: any) {
-    const [animation, setAnimation] = useState(new Animated.Value(0));
+    const [animation, setAnimation] = useState<Animated.Value>(new Animated.Value(0));
     const [color, setColor] = useState<string>('');
 
     const coloring = () => {
-        let temp = clr.color;
+        let temp: string = clr.color;
         setColor(temp);
     };
     const animate = () => {
@@ -18,9 +20,7 @@ export default function Block(clr: any) {
             duration: 1000,
             easing: Easing.ease,
             useNativeDriver: true,
-        }).start(() => {
-            animation.setValue(0);
-        });
+        }).start(() => animation.setValue(0));
     };
 
     const animateOpacity = animation.interpolate({
@@ -28,9 +28,7 @@ export default function Block(clr: any) {
         outputRange: [0, 0.5, 0.5, 1],
     });
 
-    const animateStyle = {
-        opacity: animateOpacity,
-    };
+    const animateStyle = { opacity: animateOpacity };
 
     useEffect(() => {
         coloring();
@@ -55,5 +53,3 @@ const styles = StyleSheet.create({
         height: 150,
     },
 });
-
-
