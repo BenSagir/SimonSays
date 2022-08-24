@@ -1,15 +1,17 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Block from './Block';
 import { useSelector, useDispatch } from 'react-redux';
-import { setScore } from './redux/actions';
+import { setScore, setPlay } from './redux/actions';
 import playSound from './util';
 
-function MainScreen({ navigation }) {
+function MainScreen({ navigation }: any) {
 
     const { score } = useSelector((state: any) => state.scoreReducer);
+    const { play } = useSelector((state: any) => state.playReducer);
     const dispatch = useDispatch();
 
     const [mainSeq, setMainSeq] = useState<string>('');
@@ -40,7 +42,7 @@ function MainScreen({ navigation }) {
         let temp = userSeq;                             //append the pressed letter to the user sequence
         temp += val;
         let isOk = mainSeq.includes(temp, 0);           //isOK is a boolean. true when the user sequence is match to the start of the main sequence
-        if (isOk) {
+        if (isOk && mainSeq.slice(0, temp.length) === temp) {
             if (mainSeq.length === temp.length) {       //if both sequences are in the same length therefor the user entered the right sequence
                 setTimeout(() => {                      //set timeout for the last sound to be played
                     if (mainSeq === temp) {             //if there is a match between the main sequence and the user sequence
@@ -51,15 +53,14 @@ function MainScreen({ navigation }) {
             } else { setUserSeq(temp); }                //if the user is in the middle of his sequence, set the temp input as the user sequnce for further inputs
         }
         else {                                          //whenever there is no match between the sequences, GAME OVER
-            setMainSeq('');                             //set the main seq to empty
-            setUserSeq('');                             //as well as the user seq
+            dispatch(setPlay(false) as any);
+            navigation.navigate('Result');
         }
     };
 
     const newGame = () => {                             //set a new game
-        setMainSeq('');
+        setMainSeq(colors[Math.floor(Math.random() * colors.length)]);
         setUserSeq('');
-        dispatch(setScore(0) as any);
     };
 
     async function display() {                          //display function to present the animation and sound of the new sequnece that the user should be following
@@ -93,7 +94,10 @@ function MainScreen({ navigation }) {
     }
 
     useEffect(() => {   //whenever the score is updated, get the next color add and a new turn
-        newColor();
+        if (play) {
+            if (score === 0) { newGame(); }
+            else { newColor(); }
+        }
     }, [score]);
 
     useEffect(() => {   //whenever the main sequecne is changed, display the animation
@@ -104,17 +108,11 @@ function MainScreen({ navigation }) {
 
     return (
         <View style={styles.main}>
-            <TouchableOpacity onPress={() => navigation.navigate('Result')}>
-                <Text style={styles.text}>to results</Text>
-            </TouchableOpacity>
-            <Text style={styles.text}>Score: {score}</Text>
-            <Text style={styles.text}>{mainSeq}</Text>
-
-            <TouchableOpacity style={styles.start} onPress={() => { newGame(); }}>
-                <Text style={styles.text}>Start</Text>
+            <TouchableOpacity style={styles.start} onPress={() => { dispatch(setPlay(true) as any); dispatch(setScore(-1) as any); dispatch(setScore(0) as any); }}>
+                <Text style={styles.text}>New Game</Text>
             </TouchableOpacity>
 
-            <View style={[styles.game, { borderColor: loading ? '#999' : '#e2e2e1' }]}>
+            <View style={[styles.game, { borderColor: loading ? '#e9404d' : '#54b994' }]}>
                 <View style={styles.row}>
                     {loading ? loadRed ? <Block color={'#f00'} /> : <View style={styles.red} /> :
                         <TouchableOpacity style={styles.red} onPress={() => handleInput('R')} />}
@@ -129,6 +127,10 @@ function MainScreen({ navigation }) {
                     {loading ? loadYellow ? <Block color={'#ff0'} /> : <View style={styles.yellow} /> :
                         <TouchableOpacity style={styles.yellow} onPress={() => handleInput('Y')} />}
                 </View>
+                <View style={[styles.center, { borderColor: loading ? '#e9404d' : '#54b994' }]} >
+                    <Text style={styles.cenText}>{play ? score : '...'}</Text>
+                </View>
+
             </View>
         </View>
     );
@@ -139,15 +141,20 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        backgroundColor: '#e2e2e1',
+        backgroundColor: '#241b2f',
     },
     container: {
         alignItems: 'center',
         justifyContent: 'center',
     },
     text: {
-        color: '#48484A',
+        color: '#fff',
         fontSize: 25,
+    },
+    cenText: {
+        color: '#171520',
+        fontSize: 25,
+        fontWeight: 'bold',
     },
     temp: {
         color: '#48484A',
@@ -157,7 +164,7 @@ const styles = StyleSheet.create({
     start: {
         padding: 5,
         borderRadius: 11,
-        backgroundColor: '#999',
+        backgroundColor: '#262335',
     },
     row: {
         flexDirection: 'row',
@@ -166,7 +173,7 @@ const styles = StyleSheet.create({
         borderRadius: 200,
         backgroundColor: '#fff',
         overflow: 'hidden',
-        borderWidth: 10,
+        borderWidth: 7,
     },
     red: {
         backgroundColor: '#f00',
@@ -187,6 +194,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#ff0',
         width: 150,
         height: 150,
+    },
+    center: {
+        alignSelf: 'center',
+        backgroundColor: '#fff',
+        width: 100,
+        height: 100,
+        justifyContent: 'center',
+        position: 'absolute',
+        top: 100,
+        borderRadius: 100,
+        borderWidth: 4,
+        alignItems: 'center',
     },
 });
 export default MainScreen;
