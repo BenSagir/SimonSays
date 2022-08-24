@@ -15,7 +15,7 @@ function MainScreen({ navigation }: any) {
 
     const [mainSeq, setMainSeq] = useState<string>('');
     const [userSeq, setUserSeq] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [loadRed, setLoadRed] = useState<boolean>(false);
     const [loadGreen, setLoadGreen] = useState<boolean>(false);
     const [loadBlue, setLoadBlue] = useState<boolean>(false);
@@ -100,6 +100,7 @@ function MainScreen({ navigation }: any) {
     }, [score]);
 
     useEffect(() => {   //whenever the main sequecne is changed, display the animation
+        setLoading(true);
         display();
     }, [mainSeq]);
 
@@ -111,7 +112,7 @@ function MainScreen({ navigation }: any) {
                 <Text style={styles.text}>New Game</Text>
             </TouchableOpacity>
 
-            <View style={[styles.game, { borderColor: loading ? '#e9404d' : '#54b994' }]}>
+            {play ? <View style={[styles.game, { borderColor: loading ? '#e9404d' : '#54b994' }]}>
                 <View style={styles.row}>
                     {loading ? loadRed ? <Block color={'#f00'} /> : <View style={styles.red} /> :
                         <TouchableOpacity style={styles.red} onPress={() => handleInput('R')} />}
@@ -127,10 +128,20 @@ function MainScreen({ navigation }: any) {
                         <TouchableOpacity style={styles.yellow} onPress={() => handleInput('Y')} />}
                 </View>
                 <View style={[styles.center, { borderColor: loading ? '#e9404d' : '#54b994' }]} >
-                    <Text style={styles.cenText}>{play ? score : '...'}</Text>
+                    <Text style={styles.cenText}>{score}</Text>
                 </View>
-
-            </View>
+            </View> :
+                <View style={styles.game}>
+                    <View style={styles.row}>
+                        <View style={styles.red} />
+                        <View style={styles.green} />
+                    </View>
+                    <View style={styles.row}>
+                        <View style={styles.blue} />
+                        <View style={styles.yellow} />
+                    </View>
+                    <View style={styles.center} />
+                </View>}
         </View>
     );
 }
@@ -164,6 +175,8 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 11,
         backgroundColor: '#262335',
+        borderColor: '#4c3c5e',
+        borderWidth: 2,
     },
     row: {
         flexDirection: 'row',

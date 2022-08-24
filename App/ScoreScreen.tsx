@@ -20,6 +20,7 @@ function ScoreScreen({ navigation }: any) {
     const [modal, setModal] = useState<boolean>(true);
     const [input, setInput] = useState<string>('');
     const [data, setData] = useState<Scores[]>([]);
+    const [isFail, setIsFail] = useState<boolean>(false);
 
     const renderItem = (item: any) => {     //render function of each score object in a flatlist
         return (
@@ -37,7 +38,7 @@ function ScoreScreen({ navigation }: any) {
         try {                               //get the object as json from string ans sort wth the sort fucntion
             const object: Scores[] = JSON.parse(storage.getString('data') as any);
             setData(sortData(object));
-        } catch { console.log('error'); }
+        } catch { setIsFail(true); }
     };
 
     const writeStorage = () => storage.set('data', JSON.stringify(data)); //function to write to storage the recent data
@@ -95,16 +96,18 @@ function ScoreScreen({ navigation }: any) {
                                 <Text style={styles.popText}>Done?</Text>
                             </View>
                         }
-                        <TouchableOpacity style={styles.button} onPress={() => setModal(!modal)}>
+                        {!isFail ? <TouchableOpacity style={styles.button} onPress={() => setModal(!modal)}>
                             <Text style={styles.popText}>Cancel</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> : null}
                     </View>
                 </View>
             </Modal>
-            <FlatList
-                data={data}
-                renderItem={({ item }) => renderItem(item)}
-            />
+            <View style={styles.container}>
+                <FlatList
+                    data={data}
+                    renderItem={({ item }) => renderItem(item)}
+                />
+            </View>
         </View>
     );
 }
@@ -114,6 +117,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#241b2f',
+        flex: 1,
+
+    },
+    container: {
+        backgroundColor: '#241b2f',
+        flex: 1,
     },
     row: {
         flexDirection: 'row',
@@ -203,6 +212,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#262335',
         margin: 10,
         marginHorizontal: 25,
+        borderColor: '#4c3c5e',
+        borderWidth: 2,
     },
     buttonX: {
         padding: 5,
