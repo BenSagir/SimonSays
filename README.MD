@@ -9,6 +9,10 @@ Once the game begin, a series of tones and lights and requires a user to repeat 
 The application was developed and tested for Android only.
 
 
+## Free Download
+
+You can download [the latest version](https://github.com/BenSagir/SimonSays/raw/master/App/assets/app-release.apk) straight to your android device.
+
 ## Installation
 
 first of all, make sure you have [React Native CLI install properly on your computer](https://reactnative.dev/docs/environment-setup).
